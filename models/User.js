@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
+      unique: true,
       required: true,
     },
     password: {
@@ -12,11 +13,11 @@ const userSchema = new mongoose.Schema(
     },
     firstname: {
       type: String,
-      required: false,
+      required: true,
     },
     lastname: {
       type: String,
-      required: false,
+      required: true,
     },
     gender: {
       type: String,
@@ -29,8 +30,8 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
     phone: {
-      type: String,
-      required: false,
+      type: Number,
+      required: true,
     },
     birthday: {
       type: Date,
