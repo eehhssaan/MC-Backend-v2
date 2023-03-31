@@ -4,6 +4,7 @@ const express = require("express");
 // internal imports
 const connectDB = require("../config/db");
 const userRoutes = require("../routes/userRoutes");
+const adminRoutes = require("../routes/adminRoutes");
 const { isAuth } = require("../config/auth");
 
 connectDB();
@@ -13,14 +14,15 @@ app.use(express.json({ limit: "4mb" }));
 
 //root route
 app.get("/", (req, res) => {
-  res.send("App works properly!");
+  res.send("App works properly!!!");
 });
 
 app.get("/welcome", isAuth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
 
-app.use("/api/user/", isAuth, userRoutes);
+app.use("/api/user/", userRoutes);
+app.use("/api/admin/", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
