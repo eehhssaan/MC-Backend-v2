@@ -1,4 +1,5 @@
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
 // internal imports
@@ -17,6 +18,9 @@ const registerUser = async (req, res) => {
         message: "This Email already used!",
       });
     } else {
+      const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
+      const createdBy = decoded._id ? decoded._id : "";
+
       const newUser = new User({
         success: true,
         item: {
@@ -28,6 +32,7 @@ const registerUser = async (req, res) => {
           gender: gender,
           phone: phone,
           birthday: birthday,
+          createdBy: createdBy,
         },
       });
 
