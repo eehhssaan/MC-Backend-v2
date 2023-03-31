@@ -5,18 +5,11 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { signInToken, tokenForVerify } = require("../config/auth");
 
+// works
 const registerUser = async (req, res) => {
   try {
-    const {
-      username,
-      email,
-      password,
-      phone,
-      gender,
-      firstname,
-      lastname,
-      birthday,
-    } = req.body;
+    const { email, password, phone, gender, firstname, lastname, birthday } =
+      req.body.item;
 
     const isAdded = await User.findOne({ email: email });
     if (isAdded) {
@@ -25,33 +18,32 @@ const registerUser = async (req, res) => {
       });
     } else {
       const newUser = new User({
-        username,
-        email,
-        phone,
-        password: bcrypt.hashSync(password),
-        gender,
-        firstname,
-        lastname,
-        birthday,
+        success: true,
+        item: {
+          id: req.body._id,
+          email: email,
+          password: bcrypt.hashSync(password),
+          firstname: firstname,
+          lastname: lastname,
+          gender: gender,
+          phone: phone,
+          birthday: birthday,
+        },
       });
-      const user = await newUser.save();
-      const token = tokenForVerify(newUser);
+
+      let user = await newUser.save();
+      const token = tokenForVerify(newUser.item);
 
       // save user token
-      user.token = token;
+      user.accessToken = token;
 
       return res.send({
-        token: user.token,
-        success: true,
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        gender: user.gender,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        birthday: user.birthday,
-        message: "Account Created, Please Login Now!",
+        success: user.success,
+        // accessToken: user.accessToken,
+        id: user._id,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        item: user.item,
       });
     }
   } catch (err) {
@@ -61,6 +53,7 @@ const registerUser = async (req, res) => {
   }
 };
 
+// works
 const loginUser = async (req, res) => {
   try {
     // Get user input
@@ -68,24 +61,34 @@ const loginUser = async (req, res) => {
 
     // Validate user input
     if (!(email && password)) {
-      res.status(400).send("Please input both email and password");
+      return res.status(400).send("Please input both email and password");
     }
 
-    const user = await User.findOne({ email: email });
+    // console.log(await User.getIndexes);
 
-    if (user && user.password && bcrypt.compareSync(password, user.password)) {
-      const token = signInToken(user);
+    const user = await User.findOne({ "item.email": email });
+
+    if (
+      user &&
+      user.item.password &&
+      bcrypt.compareSync(password, user.item.password)
+    ) {
+      const token = signInToken(user.item);
+      user.token = token;
+
       res.send({
-        token,
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        phone: user.phone,
-        gender: user.gender,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        birthday: user.birthday,
-        message: "You have logged in!",
+        success: true,
+        accessToken: token,
+        item: {
+          _id: user.item._id,
+          email: user.item.email,
+          phone: user.item.phone,
+          gender: user.item.gender,
+          firstname: user.item.firstname,
+          lastname: user.item.lastname,
+          birthday: user.birthday,
+          message: "You have logged in!",
+        },
       });
     } else {
       res.status(401).send({
@@ -99,34 +102,37 @@ const loginUser = async (req, res) => {
   }
 };
 
+// works
 const updateUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    // console.log(user);
 
     if (user) {
-        user.username = req.body.username || user.username,
-        user.password = req.body.password || user.password,
-        user.firstname = req.body.firstname || user.firstname,
-        user.lastname = req.body.lastname || user.lastname,
-        user.gender = req.body.gender || user.gender,
-        user.email = req.body.email || user.email,
-        user.phone = req.body.phone || user.phone,
-        user.birthday = req.body.birthday || user.birthday;
+      (user.password = req.body.password || user.item.password),
+        (user.firstname = req.body.firstname || user.item.firstname),
+        (user.lastname = req.body.lastname || user.item.lastname),
+        (user.gender = req.body.gender || user.item.gender),
+        (user.email = req.body.email || user.item.email),
+        (user.phone = req.body.phone || user.item.phone),
+        (user.birthday = req.body.birthday || user.item.birthday);
 
       const updatedUser = await user.save();
       const token = signInToken(updatedUser);
       res.send({
-        token,
-        _id: updatedUser._id,
-        username: updatedUser.username,
-        password: updatedUser.password,
-        firstname: updatedUser.firstname,
-        lastname: updatedUser.lastname,
-        gender: updatedUser.gender,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        birthday: updatedUser.birthday,
+        success: true,
+        id: user._id,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+        item: {
+          _id: updatedUser._id,
+          password: updatedUser.password,
+          firstname: updatedUser.firstname,
+          lastname: updatedUser.lastname,
+          gender: updatedUser.gender,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          birthday: updatedUser.birthday,
+        },
       });
     }
   } catch (err) {
@@ -136,18 +142,42 @@ const updateUser = async (req, res) => {
   }
 };
 
+// works
 const allUsers = async (req, res) => {
   try {
     const users = await User.find({}).sort({ _id: -1 });
-    res.send(users);
+    res.send({
+      success: true,
+      items: users,
+      count: users.length,
+    });
   } catch (err) {
     res.status(500).send({ message: err.message });
+  }
+};
+
+// works
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    console.log(user);
+
+    res.send({
+      success: true,
+      item: user.item,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
   }
 };
 
 module.exports = {
   registerUser,
   loginUser,
-  allUsers,
   updateUser,
+  allUsers,
+  getUserById,
 };
