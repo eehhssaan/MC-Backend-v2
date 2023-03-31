@@ -10,9 +10,9 @@ const { signInToken, tokenForVerify } = require("../config/auth");
 const registerUser = async (req, res) => {
   try {
     const { email, password, phone, gender, firstname, lastname, birthday } =
-      req.body.item;
+      req.body;
 
-    const isAdded = await User.findOne({ email: email });
+    const isAdded = await User.findOne({ "item.email": email });
     if (isAdded) {
       return res.status(403).send({
         message: "This Email already used!",
@@ -36,11 +36,12 @@ const registerUser = async (req, res) => {
         },
       });
 
-      let user = await newUser.save();
+      let user;
       const token = tokenForVerify(newUser.item);
 
       // save user token
-      user.accessToken = token;
+      newUser.accessToken = token;
+      user = await newUser.save();
 
       return res.send({
         success: user.success,
@@ -68,8 +69,6 @@ const loginUser = async (req, res) => {
     if (!(email && password)) {
       return res.status(400).send("Please input both email and password");
     }
-
-    // console.log(await User.getIndexes);
 
     const user = await User.findOne({ "item.email": email });
 
@@ -165,8 +164,6 @@ const allUsers = async (req, res) => {
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-
-    console.log(user);
 
     res.send({
       success: true,
