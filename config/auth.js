@@ -20,18 +20,22 @@ const signInToken = (user) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      password: user.password,
     },
     process.env.JWT_SECRET
   );
 };
 
 const isAuth = async (req, res, next) => {
-  const { authorization } = req.headers;
   try {
-    if (!authorization) {
+    if (!req.body.token) {
       return res.status(403).send("A token is required for authentication");
     }
-    const token = authorization.split(" ")[1];
+    const token = req.body.token;
+
+    // import currently logged in user and check token saved for that user
+    // if req.body.token == token saved in user account > go ahead
+    // if not return res.status(403).send("A new is required for authentication")
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;

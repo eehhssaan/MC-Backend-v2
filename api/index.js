@@ -4,6 +4,7 @@ const express = require("express");
 // internal imports
 const connectDB = require("../config/db");
 const userRoutes = require("../routes/userRoutes");
+const authenticateRoutes = require("../routes/authenticateRoutes");
 const adminRoutes = require("../routes/adminRoutes");
 const { isAuth } = require("../config/auth");
 
@@ -21,7 +22,10 @@ app.get("/welcome", isAuth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
 });
 
-app.use("/api/user/", userRoutes);
+app.use("/api/authenticate/", authenticateRoutes);
+
+app.use("/api/account/", isAuth, userRoutes);
+
 app.use("/api/admin/", adminRoutes);
 
 const PORT = process.env.PORT || 5000;

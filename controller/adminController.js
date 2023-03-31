@@ -60,7 +60,6 @@ const loginAdmin = async (req, res) => {
     }
 
     const admin = await Admin.findOne({ email: email });
-    console.log(admin);
 
     if (
       admin &&
@@ -100,7 +99,6 @@ const allAdmin = async (req, res) => {
 };
 
 const getAdminById = async (req, res) => {
-  console.log(req.params.id);
   try {
     const admin = await Admin.findById(req.params.id);
     res.send(admin);
