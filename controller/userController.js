@@ -99,6 +99,43 @@ const loginUser = async (req, res) => {
   }
 };
 
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    // console.log(user);
+
+    if (user) {
+        user.username = req.body.username || user.username,
+        user.password = req.body.password || user.password,
+        user.firstname = req.body.firstname || user.firstname,
+        user.lastname = req.body.lastname || user.lastname,
+        user.gender = req.body.gender || user.gender,
+        user.email = req.body.email || user.email,
+        user.phone = req.body.phone || user.phone,
+        user.birthday = req.body.birthday || user.birthday;
+
+      const updatedUser = await user.save();
+      const token = signInToken(updatedUser);
+      res.send({
+        token,
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        password: updatedUser.password,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        gender: updatedUser.gender,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        birthday: updatedUser.birthday,
+      });
+    }
+  } catch (err) {
+    res.status(404).send({
+      message: "Your email is not valid!",
+    });
+  }
+};
+
 const allUsers = async (req, res) => {
   try {
     const users = await User.find({}).sort({ _id: -1 });
@@ -112,4 +149,5 @@ module.exports = {
   registerUser,
   loginUser,
   allUsers,
+  updateUser,
 };
