@@ -10,9 +10,6 @@ const {
   deleteUser,
 } = require("../controller/userController");
 
-//register a user
-// router.post("/", registerUser);
-
 // update a user
 router.put("/:id", isAuth, updateUser);
 

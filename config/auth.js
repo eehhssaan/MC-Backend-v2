@@ -1,19 +1,6 @@
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 
-const tokenForVerify = (user) => {
-  return jwt.sign(
-    {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      password: user.password,
-    },
-    process.env.JWT_SECRET_FOR_VERIFY,
-    { expiresIn: "15m" }
-  );
-};
-
 const signInToken = (user) => {
   return jwt.sign(
     {
@@ -65,7 +52,6 @@ const logout = (req, res) => {
 };
 
 module.exports = {
-  tokenForVerify,
   signInToken,
   isAuth,
   logout,
