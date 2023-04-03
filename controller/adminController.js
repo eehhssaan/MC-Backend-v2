@@ -53,14 +53,14 @@ const registerAdmin = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
     if (!(name | email || phone || password)) {
-      return res.status(403).send({
+      return res.send({
         message: "Please had all required information",
       });
     }
 
     const isAdded = await Admin.findOne({ email: email });
     if (isAdded) {
-      return res.status(403).send({
+      return res.send({
         message: "Admin with this Email already exists!!!",
       });
     } else {
@@ -95,6 +95,7 @@ const registerAdmin = async (req, res) => {
 };
 
 const loginAdmin = async (req, res) => {
+  console.log(req.body);
   try {
     // Get admin input
     const { email, password } = req.body;
