@@ -1,14 +1,13 @@
 require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
+const cookieParser = require("cookie-parser");
 
 // internal imports
-const connectDB = require("./config/db");
-const userRoutes = require("./routes/userRoutes");
-const adminRoutes = require("./routes/adminRoutes");
-const { isAuth } = require("./config/auth");
-
-const cookieParser = require("cookie-parser");
+const connectDB = require("../config/db");
+const userRoutes = require("../routes/userRoutes");
+const adminRoutes = require("../routes/adminRoutes");
+const { isAuth } = require("../config/auth");
 
 connectDB();
 const app = express();
