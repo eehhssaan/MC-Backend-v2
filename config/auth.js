@@ -58,8 +58,15 @@ const isAuth = async (req, res, next) => {
   }
 };
 
+const logout = (req, res) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  res.send({ success: true, message: "Logout successful" });
+};
+
 module.exports = {
   tokenForVerify,
   signInToken,
   isAuth,
+  logout,
 };
