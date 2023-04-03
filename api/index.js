@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 // internal imports
 const connectDB = require("../config/db");
@@ -13,6 +14,17 @@ connectDB();
 const app = express();
 
 app.use(express.json({ limit: "4mb" }));
+
+// CORS
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3003",
+    ],
+  })
+);
 
 //cookie parser
 app.use(cookieParser());
