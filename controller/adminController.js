@@ -52,6 +52,11 @@ const registerUser = async (req, res) => {
 const registerAdmin = async (req, res) => {
   try {
     const { name, email, phone, password } = req.body;
+    if (!(name | email || phone || password)) {
+      return res.status(403).send({
+        message: "Please had all required information",
+      });
+    }
 
     const isAdded = await Admin.findOne({ email: email });
     if (isAdded) {
