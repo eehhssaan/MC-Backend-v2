@@ -4,60 +4,7 @@ const bcrypt = require("bcryptjs");
 
 // internal imports
 const User = require("../models/User");
-const { signInToken, tokenForVerify } = require("../config/auth");
-
-// works
-const registerUser = async (req, res) => {
-  try {
-    const { email, password, phone, gender, firstname, lastname, birthday } =
-      req.body;
-
-    const isAdded = await User.findOne({ "item.email": email });
-    if (isAdded) {
-      return res.status(403).send({
-        message: "This Email already used!",
-      });
-    } else {
-      const decoded = jwt.verify(req.body.token, process.env.JWT_SECRET);
-      const createdBy = decoded._id ? decoded._id : "";
-
-      const newUser = new User({
-        success: true,
-        item: {
-          id: req.body._id,
-          email: email,
-          password: bcrypt.hashSync(password),
-          firstname: firstname,
-          lastname: lastname,
-          gender: gender,
-          phone: phone,
-          birthday: birthday,
-          createdBy: createdBy,
-        },
-      });
-
-      let user;
-      const token = tokenForVerify(newUser.item);
-
-      // save user token
-      newUser.accessToken = token;
-      user = await newUser.save();
-
-      return res.send({
-        success: user.success,
-        // accessToken: user.accessToken,
-        id: user._id,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-        item: user.item,
-      });
-    }
-  } catch (err) {
-    res.status(500).send({
-      message: err.message,
-    });
-  }
-};
+const { signInToken } = require("../config/auth");
 
 // works
 const loginUser = async (req, res) => {
@@ -77,26 +24,28 @@ const loginUser = async (req, res) => {
       user.item.password &&
       bcrypt.compareSync(password, user.item.password)
     ) {
-      const token = signInToken(user.item);
-      user.token = token;
+      const accessToken = signInToken(user);
 
-      res.send({
-        success: true,
-        accessToken: token,
-        item: {
-          _id: user.item._id,
-          email: user.item.email,
-          phone: user.item.phone,
-          gender: user.item.gender,
-          firstname: user.item.firstname,
-          lastname: user.item.lastname,
-          birthday: user.birthday,
-          message: "You have logged in!",
-        },
+      res.setHeader("authorization", `Bearer ${accessToken}`);
+      const accessExpire = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+      const refreshExpire = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      const refreshToken = signInToken({ user, expiry: refreshExpire });
+
+      res.cookie("accessToken", accessToken, { accessExpire, httpOnly: true });
+      res.cookie("refreshToken", refreshToken, {
+        refreshExpire,
+        httpOnly: true,
       });
+
+      (user.password = ""), (user.accessToken = accessToken);
+      user.refreshToken = refreshToken;
+      user.message = "You have logged in as user!";
+
+      res.send(user);
     } else {
       res.status(401).send({
-        message: "Invalid user or password!",
+        message: "Invalid user email or password!",
       });
     }
   } catch (err) {
@@ -121,27 +70,35 @@ const updateUser = async (req, res) => {
         (user.birthday = req.body.birthday || user.item.birthday);
 
       const updatedUser = await user.save();
-      const token = signInToken(updatedUser);
-      res.send({
-        success: true,
-        id: user._id,
-        createdAt: updatedUser.createdAt,
-        updatedAt: updatedUser.updatedAt,
-        item: {
-          _id: updatedUser._id,
-          password: updatedUser.password,
-          firstname: updatedUser.firstname,
-          lastname: updatedUser.lastname,
-          gender: updatedUser.gender,
-          email: updatedUser.email,
-          phone: updatedUser.phone,
-          birthday: updatedUser.birthday,
-        },
-      });
+      updatedUser.password = "";
+      const accessToken = signInToken(updatedUser);
+      updateUser.accessToken = accessToken;
+      updateUser.message = "Updated succesfully!";
+
+      res.send(updatedUser);
     }
   } catch (err) {
     res.status(404).send({
       message: "Your email is not valid!",
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    user.message = "User deleted successfully";
+    user.password = "";
+    if (user) {
+      res.send(user);
+    } else {
+      res.status(404).send({
+        message: "User not found",
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "Something went wrong. Please try again later.",
     });
   }
 };
@@ -165,10 +122,7 @@ const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
 
-    res.send({
-      success: true,
-      item: user.item,
-    });
+    res.send(user);
   } catch (err) {
     res.status(500).send({
       message: err.message,
@@ -177,9 +131,9 @@ const getUserById = async (req, res) => {
 };
 
 module.exports = {
-  registerUser,
   loginUser,
   updateUser,
   allUsers,
   getUserById,
+  deleteUser,
 };
