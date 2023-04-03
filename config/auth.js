@@ -28,17 +28,28 @@ const signInToken = (user) => {
 
 const isAuth = async (req, res, next) => {
   try {
-    if (!req.body.token) {
-      return res.status(403).send("A token is required for authentication");
+    const accessToken = req.cookies.accessToken;
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!accessToken) {
+      return res.status(403).send("Token is required for authentication");
     }
-    const token = req.body.token;
+    if (!refreshToken) {
+      return res.status(401).send("No refresh token found in cookie");
+    }
 
-    // import currently logged in user and check token saved for that user
-    // if req.body.token == token saved in user account > go ahead
-    // if not return res.status(403).send("A new is required for authentication")
+    const decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    const { exp } = decodedToken;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (Date.now() >= exp * 1000) {
+      // refresh token has expired
+      return res.status(401).send("Refresh token has expired");
+    }
+
+    const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);
+
     req.user = decoded;
+    req.body.accesstoken = accessToken;
     next();
   } catch (err) {
     res.status(401).send({
