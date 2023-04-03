@@ -1,13 +1,11 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const session = require("express-session");
 
 // internal import
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 
-const { signInToken, tokenForVerify } = require("../config/auth");
+const { signInToken } = require("../config/auth");
 
 const registerUser = async (req, res) => {
   try {
@@ -15,7 +13,6 @@ const registerUser = async (req, res) => {
       req.body;
 
     const isAdded = await User.findOne({ "item.email": email });
-    //console.log("registering");
     if (isAdded) {
       return res.status(403).send({
         message: "This Email already used!",
@@ -72,11 +69,6 @@ const registerAdmin = async (req, res) => {
       });
 
       const admin = await newAdmin.save();
-      // const token = tokenForVerify(newAdmin);
-
-      // //console.log(admin)
-      // save admin token
-      // admin.token = token;
 
       return res.send({
         token: admin.token,
