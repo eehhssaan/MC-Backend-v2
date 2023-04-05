@@ -22,7 +22,7 @@ router.post("/registeruser", isAuth, registerUser);
 
 router.post("/login", loginAdmin);
 
-router.get("/logout", logout);
+router.post("/logout", logout);
 
 // router.put("/forget-password", forgetPassword);
 

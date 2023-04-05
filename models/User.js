@@ -49,6 +49,10 @@ const userSchema = new mongoose.Schema(
         type: String,
         required: false,
       },
+      createrName: {
+        type: String,
+        required: false,
+      },
     },
   },
   {

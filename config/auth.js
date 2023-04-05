@@ -46,9 +46,8 @@ const isAuth = async (req, res, next) => {
 };
 
 const logout = (req, res) => {
-  res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
-  res.send({ success: true, message: "Logout successful" });
+  res.status(200).send({ success: true, message: "Logout successful" });
 };
 
 module.exports = {

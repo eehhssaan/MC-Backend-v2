@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
       });
     } else {
       const createdBy = req.user._id ? req.user._id : "";
+      const createrName = req.user.name;
 
       const newUser = new User({
         success: true,
@@ -32,6 +33,7 @@ const registerUser = async (req, res) => {
           phone: phone,
           birthday: birthday,
           createdBy: createdBy,
+          createrName: createrName,
         },
       });
 
