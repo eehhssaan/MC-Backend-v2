@@ -22,7 +22,7 @@ const isAuth = async (req, res, next) => {
       return res.status(403).send("Token is required for authentication");
     }
     if (!refreshToken) {
-      return res.status(401).send("No refresh token found in cookie");
+      return res.status(403).send("No refresh token found in cookie");
     }
 
     const decodedToken = jwt.verify(refreshToken, process.env.JWT_SECRET);
@@ -30,7 +30,7 @@ const isAuth = async (req, res, next) => {
 
     if (Date.now() >= exp * 1000) {
       // refresh token has expired
-      return res.status(401).send("Refresh token has expired");
+      return res.status(403).send("Refresh token has expired");
     }
 
     const decoded = jwt.verify(accessToken, process.env.JWT_SECRET);

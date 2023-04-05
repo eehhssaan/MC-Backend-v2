@@ -18,6 +18,7 @@ app.use(express.json({ limit: "4mb" }));
 // CORS
 app.use(
   cors({
+    credentials: true,
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
@@ -27,8 +28,16 @@ app.use(
   })
 );
 
-//cookie parser
-app.use(cookieParser());
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Credentials", true);
+  next();
+});
 
 // Set up session middleware
 app.use(

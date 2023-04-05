@@ -95,7 +95,6 @@ const registerAdmin = async (req, res) => {
 };
 
 const loginAdmin = async (req, res) => {
-  console.log(req.body);
   try {
     // Get admin input
     const { email, password } = req.body;
